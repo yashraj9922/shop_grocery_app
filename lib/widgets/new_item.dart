@@ -30,7 +30,13 @@ class _NewItemState extends State<NewItem> {
 
                 // validator parameter is used to validate the input field and it takes a function as a parameter which returns a string as an error message
                 validator: (value) {
-                  return 'Demo...';
+                  if (value == null ||
+                      value.isEmpty ||
+                      value.trim().length <= 1 ||
+                      value.trim().length > 50) {
+                    return 'Must be between 1 to 50 characters';
+                  }
+                  return null;
                 },
               ),
               // instead of TextField
@@ -45,7 +51,13 @@ class _NewItemState extends State<NewItem> {
                       initialValue: '1',
                       keyboardType: TextInputType.number,
                       validator: (value) {
-                        return 'Demo...';
+                        if (value == null ||
+                            value.isEmpty ||
+                            int.tryParse(value) == null ||
+                            int.tryParse(value)! <= 0) {
+                          return 'Must be a valid positive number';
+                        }
+                        return null;
                       },
                     ),
                   ),
@@ -86,7 +98,7 @@ class _NewItemState extends State<NewItem> {
                   // const SizedBox(width: 8),
                   ElevatedButton(
                     onPressed: () {},
-                    child: const Text("Submit"),
+                    child: const Text("Add item"),
                   ),
                 ],
               ),
