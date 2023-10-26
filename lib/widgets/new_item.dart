@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shop_grocery_app/data/categories.dart';
+import 'package:shop_grocery_app/models/category.dart';
 
 class NewItem extends StatefulWidget {
   const NewItem({super.key});
@@ -14,6 +15,7 @@ class _NewItemState extends State<NewItem> {
   final _formKey = GlobalKey<FormState>();
   var _enteredName = '';
   var _enteredQuantity = '';
+  var _selectedCategory = categories[Categories.vegetables]!;
 
   void _saveItem() {
     if (_formKey.currentState!.validate()) {
@@ -52,7 +54,7 @@ class _NewItemState extends State<NewItem> {
                 onSaved:
                     (value /*this will be the value at the time save is executed*/) {
                   _enteredName = value!;
-                  // not need to wrap with setState method as i do not need any ui update...just wanna store the value and execute it after calling save  
+                  // not need to wrap with setState method as i do not need any ui update...just wanna store the value and execute it after calling save
                 },
               ), // instead of TextField
               Row(
@@ -74,14 +76,15 @@ class _NewItemState extends State<NewItem> {
                         }
                         return null;
                       },
-                      onSaved: (value){
-                        _enteredQuantity= int.parse(value!) as String;
+                      onSaved: (value) {
+                        _enteredQuantity = int.parse(value!) as String;
                       },
                     ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: DropdownButtonFormField(
+                      value: _selectedCategory,
                       items: [
                         // .entries returns a list of map entries
                         for (final category in categories.entries)
@@ -100,7 +103,11 @@ class _NewItemState extends State<NewItem> {
                             ),
                           )
                       ],
-                      onChanged: (value) {},
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedCategory = value!;
+                        });
+                      },
                     ),
                   ),
                 ],
