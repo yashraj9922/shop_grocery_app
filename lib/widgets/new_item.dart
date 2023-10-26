@@ -12,9 +12,13 @@ class NewItem extends StatefulWidget {
 
 class _NewItemState extends State<NewItem> {
   final _formKey = GlobalKey<FormState>();
+  var _enteredName = '';
+  var _enteredQuantity = '';
 
   void _saveItem() {
-    _formKey.currentState!.validate();
+    if (_formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
+    }
   }
 
   @override
@@ -45,8 +49,12 @@ class _NewItemState extends State<NewItem> {
                   }
                   return null;
                 },
-              ),
-              // instead of TextField
+                onSaved:
+                    (value /*this will be the value at the time save is executed*/) {
+                  _enteredName = value!;
+                  // not need to wrap with setState method as i do not need any ui update...just wanna store the value and execute it after calling save  
+                },
+              ), // instead of TextField
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
@@ -65,6 +73,9 @@ class _NewItemState extends State<NewItem> {
                           return 'Must be a valid positive number';
                         }
                         return null;
+                      },
+                      onSaved: (value){
+                        _enteredQuantity= int.parse(value!) as String;
                       },
                     ),
                   ),
