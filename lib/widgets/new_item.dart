@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shop_grocery_app/data/categories.dart';
 import 'package:shop_grocery_app/models/category.dart';
+import 'package:shop_grocery_app/models/grocery_item.dart';
 
 class NewItem extends StatefulWidget {
   const NewItem({super.key});
@@ -14,12 +15,21 @@ class NewItem extends StatefulWidget {
 class _NewItemState extends State<NewItem> {
   final _formKey = GlobalKey<FormState>();
   var _enteredName = '';
-  var _enteredQuantity = '';
+  var _enteredQuantity = 1;
   var _selectedCategory = categories[Categories.vegetables]!;
 
   void _saveItem() {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
+
+      // passing data back to GroceryList....using Navigator.pop(data)
+      Navigator.of(context).pop(
+        GroceryItem(
+            id: DateTime.now().toString(),
+            name: _enteredName,
+            quantity: _enteredQuantity,
+            category: _selectedCategory),
+      );// now getting access of data that u pass.... use async and await
     }
   }
 
@@ -77,7 +87,7 @@ class _NewItemState extends State<NewItem> {
                         return null;
                       },
                       onSaved: (value) {
-                        _enteredQuantity = int.parse(value!) as String;
+                        _enteredQuantity = int.parse(value!);
                       },
                     ),
                   ),
