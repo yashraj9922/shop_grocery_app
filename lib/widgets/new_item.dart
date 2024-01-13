@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:shop_grocery_app/data/categories.dart';
 import 'package:shop_grocery_app/models/category.dart';
 import 'package:shop_grocery_app/models/grocery_item.dart';
+import 'package:http/http.dart' as http;
 
 class NewItem extends StatefulWidget {
   const NewItem({super.key});
@@ -18,18 +21,53 @@ class _NewItemState extends State<NewItem> {
   var _enteredQuantity = 1;
   var _selectedCategory = categories[Categories.vegetables]!;
 
-  void _saveItem() {
+  void _saveItem() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
 
+      final url = Uri.https('flutter-prep-shopping-default-rtdb.firebaseio.com',
+          'shopping-list.json');
+      // firebase uses https--> so use Uri.https
+      // shopping-list.json is the endpoint...basically this will create the subcollection(sub folder) in the realtime database Firebase
+
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(
+          {
+            'name': _enteredName,
+            'quantity': _enteredQuantity.toString(),
+            'category': _selectedCategory.title,
+          },
+        ),
+      );
+      // headers is used to tell the server that what type of data we are sending
+      // application/json is used to tell the server that we are sending json data
+      // Content-Type is the key and application/json is the value
+      // body is used to send the data to the server
+      // json.encode is used to convert the data into json format
+      // we did not send id as firebase will automatically generate the id for us
+      // async and await is used to wait for the response from the server
+      // await is used for Future object
+
       // passing data back to GroceryList....using Navigator.pop(data)
-      Navigator.of(context).pop(
-        GroceryItem(
-            id: DateTime.now().toString(),
-            name: _enteredName,
-            quantity: _enteredQuantity,
-            category: _selectedCategory),
-      );// now getting access of data that u pass.... use async and await
+      // Navigator.of(context).pop(
+      //   GroceryItem(
+      //       id: DateTime.now().toString(),
+      //       name: _enteredName,
+      //       quantity: _enteredQuantity,
+      //       category: _selectedCategory),
+      // ); // now getting access of data that u pass.... use async and await
+
+      if (!context.mounted) {
+        return;
+      }
+      // mounted because if the user navigates back before the response is received then we do not want to update the ui
+      // mounted is a property of the state class which returns true if the widget is mounted on the screen
+      // if the widget is not mounted then we do not want to update the ui
+      Navigator.of(context).pop();
     }
   }
 
