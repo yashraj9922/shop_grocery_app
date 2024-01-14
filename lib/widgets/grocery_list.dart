@@ -19,6 +19,9 @@ class _GroceryListState extends State<GroceryList> {
   // final List<GroceryItem> _groceryItems = [];
   List<GroceryItem> _groceryItems = [];
 
+  var _isLoading = true;
+  String? _error;
+
   //StatelessWidget class does not have a default context hence we need to accept the context in user defined function
   // void _addItem(BuildContext context){
   //   Navigator.of(context)...
@@ -59,7 +62,7 @@ class _GroceryListState extends State<GroceryList> {
     // });
 
     // WAITING FOR THE User come back from the newItem screen
-    await Navigator.of(context).push<GroceryItem>(
+    final newItem = await Navigator.of(context).push<GroceryItem>(
       MaterialPageRoute(
         builder: (ctx) => const NewItem(),
       ),
@@ -73,7 +76,16 @@ class _GroceryListState extends State<GroceryList> {
     // final response = await http.get(url);
     // print(response.body);
 
-    _loadItem();
+    // _loadItem();
+
+    if (newItem == null) {
+      return;
+    }
+
+    setState(() {
+      _groceryItems.add(
+          newItem); // wrapped in setState because it after addition ui needs to be changed
+    });
   }
 
   // I need to load the data from the server when the app starts and not when the user navigates back from the newItem screen
@@ -83,8 +95,19 @@ class _GroceryListState extends State<GroceryList> {
     final response = await http.get(url);
     // print(response.body);
 
+    if (response.statusCode >= 400) {
+      setState(() {
+        _error = 'Could not load data, Please try again later';
+      });
+    }
+
     // now we need to convert the json data into dart object
+    // if listdata is null then we will return
+    if (response.body == 'null') {
+      return;
+    }
     final Map<String, dynamic> listData = json.decode(response.body);
+
     final List<GroceryItem> loadedItems = [];
     for (final item in listData.entries) {
       final category = categories.entries
@@ -103,10 +126,15 @@ class _GroceryListState extends State<GroceryList> {
     }
     setState(() {
       _groceryItems = loadedItems;
+      _isLoading = false;
     });
   }
 
   void removeItem(GroceryItem item) {
+    final url = Uri.https('flutter-prep-shopping-default-rtdb.firebaseio.com',
+        'shopping-list/${item.id}.json');
+    http.delete(url);
+
     setState(() {
       _groceryItems.remove(item);
     });
@@ -117,6 +145,12 @@ class _GroceryListState extends State<GroceryList> {
     Widget content = const Center(
       child: Text("No Items added yet..."),
     );
+
+    if (_isLoading) {
+      content = const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
 
     if (_groceryItems.isNotEmpty) {
       content = ListView.builder(
@@ -139,6 +173,12 @@ class _GroceryListState extends State<GroceryList> {
             ),
           ),
         ),
+      );
+    }
+
+    if (_error != null) {
+      content = Center(
+        child: Text(_error!),
       );
     }
 
